@@ -1,0 +1,33 @@
+---
+title: "P8105_hw3"
+author: "cmh2275"
+date: "2026-10-16"
+output: github_document
+---
+# Homework 3 
+## Problem 1
+```{r setup, include=FALSE}
+library(tidyverse)
+```
+
+## Problem 2 
+```{r}
+nhanes1_df = read_csv(file = "./nhanes_covar.csv", skip = 4, na = c("NA", "", "."))|>
+    janitor::clean_names()|>
+factor(education, levels = c(1, 2, 3),
+                labels = c("less than high school", "high school equivalent", "more than high school"), 
+   sex, levels = c(1,2), labels = c("male", "female"))|>
+
+```
+
+```{r}
+nhanes2_df = read_csv(file = "./nhanes_accel.csv", na = c("NA", "", "."))|>
+  janitor::clean_names()
+```
+
+
+
+
+
+
+
