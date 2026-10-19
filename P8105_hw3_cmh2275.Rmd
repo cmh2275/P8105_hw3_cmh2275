@@ -37,7 +37,7 @@ mutate(sex = factor(sex,
 nhanes2_df = read_csv(file = "./nhanes_accel.csv", na = c("NA", "", "."))|>
   janitor::clean_names()
 ```
-#3 Join
+## Join
 ```{r}
 fullnhanes_df = left_join(nhanes1_df, nhanes2_df)
 ```
@@ -72,7 +72,7 @@ fullnhanes_df = fullnhanes_df |>
   mutate(total_activity = rowSums(across(starts_with("min"))))
 ```
 
-## 
+## Total Activity Visualization
 
 ```{r}
 fullnhanes_df |>
@@ -89,5 +89,34 @@ fullnhanes_df |>
   theme(legend.position = "bottom")
 ```
 
+Total activity demonstrates large variablity across sex and age; however, there is a general trend across education levels to decrease across age. This is most pronounced in the "less than high school" level, particularly for females, while this much less pronouncced in the "more than high school" level. 
 
+## 24-hour Activity 
+```{r}
+fullnhanes_df |>
+  pivot_longer(
+    cols = starts_with("min"),
+    names_to = "minutes", 
+    names_prefix = "min", 
+    values_to = "activity"
+  )|>
+  mutate (minutes = as.numeric(minutes))|>
+  
+  ggplot(aes(x = minutes, y = activity, color= sex))+
+  geom_line (aes(group = sex), alpha = 0.3)+
+  geom_smooth(se = FALSE, linewidth = 0.5)+
+  facet_wrap(~education, ncol = 1)+
+  scale_x_continuous(
+    breaks = seq(0,1440, by = 240), 
+    labels = c("12:00am", "4:00am", "8:00am", "12:00pm", "4:00pm", "8:00pm", "11:59pm")
+  )+
+  labs (
+    title = "24-Hour Activity by Sex and Education Level", 
+    x = "Time of Day",
+    y = "Activity", 
+    color = "Sex"
+  )+
+  theme(legend.position = "bottom")
+```
 
+From these graphs, activity begins increasing around 6-7 hours after the start wear, which is consistent with the data starting at midnight and thus participants are likely sleeping up until 6 or 7 in the morning and then begin their day, leading to increased activity levels. Activity decreases are also noted to start around 10pm, or hour 22 of wear, consistent with common sleep cycles. There appears to be more male activity across typical sleeping hours in the "less than high school" education level, which could be indicative of nightshift work in this population. There is also a pattern of high activity in males in the "more than high school" education level that is impacting the graphs, which might be indicative of afterwork activity with this population. 
