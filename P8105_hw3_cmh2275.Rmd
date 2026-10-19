@@ -28,6 +28,81 @@ scale_colour_discrete = scale_colour_viridis_d
 scale_fill_discrete = scale_fill_viridis_d
 ```
 
+```{r}
+library(p8105.datasets)
+data("ny_noaa")
+noaa_df = ny_noaa |>
+  janitor::clean_names()|>
+  separate (date, into = c("year", "month", "day"), sep = "-", convert = TRUE)|>
+  mutate (id = as.factor(id),
+          year = as.factor(year), 
+          month = as.factor(month),
+          prcp = prcp/10, 
+          tmax = as.numeric(tmax)/10, 
+          tmin = as.numeric(tmin)/ 10
+          )
+```
+This data set contains snowfall and precipitation information by date and id location. 
+
+```{r}
+noaa_df|>
+  count(snow, sort = TRUE)|>
+slice_head(n = 10)
+```
+
+The most common value for snowfall is 0 mm. This is likely becuase most days do not have snowfall in most locations.   
+
+```{r}
+noaa_df |>
+  filter(month == c(1, 7))|>
+  group_by(id, year, month)|>
+  summarize(mean_tmax = mean(tmax, na.rm = TRUE), .groups= "drop")|>
+  mutate (month = factor(month, levels = c(1,7), labels = c("January", "July")))|>
+  ggplot(aes(x = year, y = mean_tmax, group = id))+
+  geom_point(alpha = 0.5, size = 0.5)+
+  geom_smooth(aes(group = 1), se = FALSE, method = "loess")+
+  facet_wrap(~month, ncol = 1)+
+  labs(
+    title = "Average Max Temperature in January and July Across Years", 
+    x = "Year", 
+    y = "Average Max Temp (Celsius)"
+    )+
+  theme (
+  axis.text.x = element_text(angle = 45, hjust = 1)
+)
+```
+
+In general, the average maximum temperature across locations and years falls between -10 and 10 degrees Celsisu in January, but there is an outlier of a higher temperature in 2004. In July, the average maximum temperature was between 20 and 40 degrees Celsius generally, with a few outlier below 20 degrees, such as in 1988, 1996, and 2004. 
+
+```{r}
+temp_plot = noaa_df |>
+  filter(!is.na(tmax), !is.na(tmin)) |>
+  ggplot(aes(x = tmin, y = tmax)) +
+  geom_bin2d(bins = 50) +
+  scale_fill_viridis_c(trans = "log10") +
+  labs(
+    title = "Maximum vs. minimum temperature",
+    x = "Minimum temperature (°C)",
+    y = "Maximum temperature (°C)",
+    fill = "Count"
+  ) 
+
+snow_plot = noaa_df|>
+filter(snow > 0, snow < 100) |>
+  ggplot(aes(x = factor(year), y = snow)) +
+  geom_boxplot(alpha = 0.5) +
+  labs(
+    title = "Snowfall distribution by year",
+    x = "Snowfall (mm)",
+    y = "Year"
+  )+
+    theme (
+      axis.text.x = element_text(angle = 90)
+    )
+temp_plot+snow_plot
+```
+
+
 # Problem 2 
 ## Import and Tidy
 ```{r}
@@ -184,6 +259,8 @@ citifull_df = bind_rows(jan20_df, jan24_df, july20_df, july24_df)|>
           year = as.factor(year), 
          weekdays = factor(weekdays, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")))
 ```
+This dataset contains 1% of all rides that were less than 4 hours in January and July 2020 and in January and July 2024. It contains variables that describe the ride id, type of bike, the day the ride was taken on, the station where the ride started and the station where the ride ended, if the rider was a member or a casual rider and the duration of the ride. 
+
 ## Table 1
 ```{r}
 citifull_df|>
@@ -220,7 +297,7 @@ ggplot(aes(x = weekdays, y = median_duration, color = year, group = year))+
   geom_line(linewidth = 0.5)+
   facet_wrap(~month)+
   labs(
-    tite = "Median Ride Duration by Day, Month, and Year",
+    title = "Median Ride Duration by Day, Month, and Year",
     x = "Day of Week", 
     y = "Median Ride Duration", 
     color = "Year"
