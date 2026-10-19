@@ -120,3 +120,75 @@ fullnhanes_df |>
 ```
 
 From these graphs, activity begins increasing around 6-7 hours after the start wear, which is consistent with the data starting at midnight and thus participants are likely sleeping up until 6 or 7 in the morning and then begin their day, leading to increased activity levels. Activity decreases are also noted to start around 10pm, or hour 22 of wear, consistent with common sleep cycles. There appears to be more male activity across typical sleeping hours in the "less than high school" education level, which could be indicative of nightshift work in this population. There is also a pattern of high activity in males in the "more than high school" education level that is impacting the graphs, which might be indicative of afterwork activity with this population. 
+
+# Problem 3 
+
+```{r}
+jan20_df = read_csv(file = "./Jan 2020 Citi.csv") |>
+  janitor::clean_names()|>
+  mutate(month = c("jan"), 
+         year = c("2020"),
+         rideable_type = as.factor(rideable_type), 
+         weekdays = as.factor(weekdays), 
+         start_station_name = as.factor(start_station_name),
+         end_station_name = as.factor(end_station_name), 
+         member_casual = as.factor(member_casual))
+  
+jan24_df = read_csv(file = "./Jan 2024 Citi.csv")|>
+  janitor::clean_names()|>
+   mutate(month = c("jan"), 
+         year = c("2024"),
+         rideable_type = as.factor(rideable_type), 
+         weekdays = as.factor(weekdays), 
+         start_station_name = as.factor(start_station_name),
+         end_station_name = as.factor(end_station_name), 
+         member_casual = as.factor(member_casual))
+
+july20_df = read_csv(file = "./July 2020 Citi.csv")|>
+  janitor:: clean_names()|>
+  mutate(month = c("july"), 
+         year = c("2020"),
+         rideable_type = as.factor(rideable_type), 
+         weekdays = as.factor(weekdays), 
+         start_station_name = as.factor(start_station_name),
+         end_station_name = as.factor(end_station_name), 
+         member_casual = as.factor(member_casual))
+
+july24_df = read_csv(file = "./July 2024 Citi.csv")|>
+  janitor::clean_names()|>
+   mutate(month = c("july"), 
+         year = c("2024"),
+         rideable_type = as.factor(rideable_type), 
+         weekdays = as.factor(weekdays), 
+         start_station_name = as.factor(start_station_name),
+         end_station_name = as.factor(end_station_name), 
+         member_casual = as.factor(member_casual))
+
+citifull_df = bind_rows(jan20_df, jan24_df, july20_df, july24_df)|>
+  mutate(month = as.factor(month), 
+          year = as.factor(year))
+```
+## Table 1
+```{r}
+citifull_df|>
+count(month, year, member_casual)|>
+  pivot_wider(names_from = member_casual, values_from = n, values_fill = 0)
+  
+```
+Members had more rides across all months and years than casual riders. The use of Citi Bike by both members and casual riders has grown since 2020. 
+
+## Table 2
+
+```{r}
+citifull_df|>
+  filter(year == "2024", month == "july")|>
+  count(start_station_name, sort = TRUE) |>
+  slice_head(n=5)|>
+ knitr:: kable(col.names=c("Starting station", "number of rides"),
+   caption = "Five most popular starting stations in July 2024")
+```
+
+
+
+
+
